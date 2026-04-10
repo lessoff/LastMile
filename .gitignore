@@ -1,0 +1,20 @@
+# Maven
+Source/target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs (keep directory, ignore contents)
+logs/*.log
+
+# Release JAR is tracked

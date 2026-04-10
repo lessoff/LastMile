@@ -1,0 +1,42 @@
+[
+  {
+    "id": "A",
+    "label": "123 Main St",
+    "priority": "HIGH",
+    "weightKg": 5.0,
+    "timeWindowOpen": "08:00",
+    "timeWindowClose": "10:00"
+  },
+  {
+    "id": "B",
+    "label": "456 Oak Ave",
+    "priority": "NORMAL",
+    "weightKg": 8.0,
+    "timeWindowOpen": "09:00",
+    "timeWindowClose": "14:00"
+  },
+  {
+    "id": "C",
+    "label": "789 Pine Rd",
+    "priority": "LOW",
+    "weightKg": 6.0,
+    "timeWindowOpen": "08:00",
+    "timeWindowClose": "09:30"
+  },
+  {
+    "id": "D",
+    "label": "321 Elm Blvd",
+    "priority": "HIGH",
+    "weightKg": 4.0,
+    "timeWindowOpen": "08:00",
+    "timeWindowClose": "11:00"
+  },
+  {
+    "id": "E",
+    "label": "654 Maple Dr",
+    "priority": "NORMAL",
+    "weightKg": 7.0,
+    "timeWindowOpen": "10:00",
+    "timeWindowClose": "15:00"
+  }
+]

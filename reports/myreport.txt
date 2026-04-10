@@ -1,0 +1,33 @@
+==========================================================
+           DELIVERY ROUTE OPTIMIZATION REPORT
+==========================================================
+
+Algorithm: 2-Opt Improvement
+Route:     Depot → A → B → E → C → D → Depot
+Total Distance: 107.00 km
+Estimated Travel Time: 161 minutes
+
+--- Per-Stop Breakdown ---
+  Stop   Label                Priority   Weight     Arrival    Time Window    
+  ----   ----                 --------   ------     -------    -----------    
+  A      123 Main St          HIGH       5.0 kg     08:43 [OK] 08:00-10:00    
+  B      456 Oak Ave          NORMAL     8.0 kg     09:06 [OK] 09:00-14:00    
+  E      654 Maple Dr         NORMAL     7.0 kg     09:43 [LATE] 10:00-15:00    
+  C      789 Pine Rd          LOW        6.0 kg     10:10 [LATE] 08:00-09:30    
+  D      321 Elm Blvd         HIGH       4.0 kg     10:16 [OK] 08:00-11:00    
+
+--- Constraint Violations ---
+  * Early arrival at E: arrived at 09:43 but window opens at 10:00
+  * Late arrival at C: arrived at 10:10 but window closes at 09:30
+  * HIGH priority package D delivered after NORMAL/LOW priority packages
+
+--- Algorithm Comparison ---
+  Algorithm                 Distance (km)   Time (min)     
+  ------------------------- -------------   -----------    
+  Nearest Neighbor          121.00          182            
+  Greedy Edge Insertion     111.00          167            
+  2-Opt Improvement         107.00          161            
+
+Report generated at: 2026-04-10 19:04:10
+==========================================================
+

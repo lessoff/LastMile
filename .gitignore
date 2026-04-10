@@ -1,5 +1,6 @@
 # Maven
 Source/target/
+Source/dependency-reduced-pom.xml
 *.class
 
 # IDE

@@ -51,6 +51,58 @@ class TwoOptStrategyTest {
                 nnRoute.getTotalDistance() + ")");
     }
 
+    // Test 20
+    @Test
+    void testOptimize_singleStop_returnsValidRoute() {
+        double[][] matrix = {
+            {0, 15},
+            {15, 0}
+        };
+        String[] names = {"Depot", "A"};
+        DeliveryGraph graph = new DeliveryGraph(matrix, names);
+        List<Package> packages = Arrays.asList(
+            new Package("A", "Stop A", Priority.HIGH, 2.0, "08:00", "10:00")
+        );
+
+        TwoOptStrategy twoOpt = new TwoOptStrategy();
+        Route route = twoOpt.optimize(graph, packages);
+
+        assertEquals(Arrays.asList(0, 1, 0), route.getNodeSequence(),
+            "Single-stop 2-Opt route must be Depot → A → Depot");
+        assertEquals(30.0, route.getTotalDistance(), 0.001);
+    }
+
+    // Test 21
+    @Test
+    void testOptimize_allStopsVisited_noDuplicates() {
+        double[][] matrix = {
+            {0, 10, 20, 30},
+            {10, 0, 15, 25},
+            {20, 15, 0, 10},
+            {30, 25, 10, 0}
+        };
+        String[] names = {"Depot", "A", "B", "C"};
+        DeliveryGraph graph = new DeliveryGraph(matrix, names);
+        List<Package> packages = Arrays.asList(
+            new Package("A", "A", Priority.NORMAL, 1.0, "08:00", "18:00"),
+            new Package("B", "B", Priority.NORMAL, 1.0, "08:00", "18:00"),
+            new Package("C", "C", Priority.NORMAL, 1.0, "08:00", "18:00")
+        );
+
+        TwoOptStrategy twoOpt = new TwoOptStrategy();
+        Route route = twoOpt.optimize(graph, packages);
+
+        List<Integer> stops = route.getStops();
+        assertEquals(3, stops.size(), "All 3 stops must appear in route");
+        assertEquals(3, stops.stream().distinct().count(), "No duplicate stops");
+    }
+
+    // Test 22
+    @Test
+    void testGetName_returnsTwoOptImprovement() {
+        assertEquals("2-Opt Improvement", new TwoOptStrategy().getName());
+    }
+
     @Test
     void testOptimize_alreadyOptimal_returnsUnchanged() {
         // Triangle: Depot-A-B-Depot where the NN route is already optimal

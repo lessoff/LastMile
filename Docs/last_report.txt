@@ -2,32 +2,25 @@
            DELIVERY ROUTE OPTIMIZATION REPORT
 ==========================================================
 
-Algorithm: Nearest Neighbor
-Route:     Depot → A → B → C → D → E → Depot
-Total Distance: 97.00 km
-Estimated Travel Time: 146 minutes
+Algorithm: 2-Opt Improvement
+Route:     Depot → A → B → E → C → D → Depot
+Total Distance: 107.00 km
+Estimated Travel Time: 161 minutes
 
 --- Per-Stop Breakdown ---
   Stop   Label                Priority   Weight     Arrival    Time Window    
   ----   ----                 --------   ------     -------    -----------    
-  A      123 Main St          HIGH       5.0 kg     08:18 [OK] 08:00-10:00    
-  B      456 Oak Ave          NORMAL     8.0 kg     08:45 [LATE] 09:00-14:00    
-  C      789 Pine Rd          LOW        6.0 kg     09:06 [OK] 08:00-09:30    
-  D      321 Elm Blvd         HIGH       4.0 kg     09:36 [OK] 08:00-11:00    
-  E      654 Maple Dr         NORMAL     7.0 kg     09:58 [LATE] 10:00-15:00    
+  A      123 Main St          HIGH       5.0 kg     08:43 [OK] 08:00-10:00    
+  B      456 Oak Ave          NORMAL     8.0 kg     09:06 [OK] 09:00-14:00    
+  E      654 Maple Dr         NORMAL     7.0 kg     09:43 [LATE] 10:00-15:00    
+  C      789 Pine Rd          LOW        6.0 kg     10:10 [LATE] 08:00-09:30    
+  D      321 Elm Blvd         HIGH       4.0 kg     10:16 [OK] 08:00-11:00    
 
 --- Constraint Violations ---
-  * Early arrival at B: arrived at 08:45 but window opens at 09:00
+  * Early arrival at E: arrived at 09:43 but window opens at 10:00
+  * Late arrival at C: arrived at 10:10 but window closes at 09:30
   * HIGH priority package D delivered after NORMAL/LOW priority packages
-  * Early arrival at E: arrived at 09:58 but window opens at 10:00
 
---- Algorithm Comparison ---
-  Algorithm                 Distance (km)   Time (min)     
-  ------------------------- -------------   -----------    
-  Nearest Neighbor          97.00           146            
-  Greedy Edge Insertion     97.00           146            
-  2-Opt Improvement         97.00           146            
-
-Report generated at: 2026-04-10 19:05:45
+Report generated at: 2026-04-12 18:21:07
 ==========================================================
 

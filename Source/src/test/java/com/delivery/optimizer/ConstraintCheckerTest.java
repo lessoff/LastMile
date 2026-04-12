@@ -75,6 +75,39 @@ class ConstraintCheckerTest {
         assertTrue(hasTimeViolation, "Late arrival should flag violation");
     }
 
+    // Test 23
+    @Test
+    void testGetViolations_noActions_returnsEmptyList() {
+        assertTrue(checker.getViolations().isEmpty(),
+            "A fresh ConstraintChecker should have no violations");
+    }
+
+    // Test 24
+    @Test
+    void testOnStopReached_earlyArrival_flagsViolation() {
+        // Window opens at 10:00 but vehicle arrives at 08:00
+        Package pkg = new Package("A", "A", Priority.NORMAL, 2.0, "10:00", "12:00");
+
+        checker.onStopReached(pkg, LocalTime.of(8, 0));
+
+        List<String> violations = checker.getViolations();
+        assertTrue(violations.stream().anyMatch(v -> v.contains("Early arrival")),
+            "Arriving before window open should flag an 'Early arrival' violation");
+    }
+
+    // Test 25
+    @Test
+    void testReset_clearsAllViolations() {
+        Package pkg = new Package("A", "A", Priority.NORMAL, 2.0, "09:00", "10:00");
+        checker.onStopReached(pkg, LocalTime.of(11, 0)); // late arrival — adds a violation
+        assertFalse(checker.getViolations().isEmpty(), "Precondition: should have a violation");
+
+        checker.reset();
+
+        assertTrue(checker.getViolations().isEmpty(),
+            "After reset(), violation list must be empty");
+    }
+
     @Test
     void testOnRouteComplete_capacityExceeded_reportsSplit() {
         // This test verifies that the constraint checker collects violations

@@ -60,6 +60,33 @@ class CsvMatrixReaderTest {
             () -> reader.read(file.getAbsolutePath()));
     }
 
+    // Test 26
+    @Test
+    void testRead_fourByFourMatrix_correctNodeCount() throws IOException {
+        String csv = ",Depot,A,B,C\n"
+            + "Depot,0,10,20,30\n"
+            + "A,10,0,15,25\n"
+            + "B,20,15,0,10\n"
+            + "C,30,25,10,0\n";
+
+        File file = createTempCsv(csv);
+        CsvMatrixReader reader = new CsvMatrixReader();
+        DeliveryGraph graph = reader.read(file.getAbsolutePath());
+
+        assertEquals(4, graph.getNodeCount(), "4×4 CSV should produce a graph with 4 nodes");
+        assertEquals("C", graph.getNodeName(3), "Last node name should be 'C'");
+    }
+
+    // Test 27
+    @Test
+    void testRead_nonExistentFile_throwsInvalidMatrixException() {
+        CsvMatrixReader reader = new CsvMatrixReader();
+
+        assertThrows(InvalidMatrixException.class,
+            () -> reader.read("/nonexistent/path/file.csv"),
+            "Reading a missing file should throw InvalidMatrixException");
+    }
+
     @Test
     void testRead_negativeDistance_throwsInvalidMatrixException() throws IOException {
         String csv = ",Depot,A\n" +

@@ -98,6 +98,33 @@ class NearestNeighborStrategyTest {
         assertEquals(30.0, route.getTotalDistance(), 0.001);
     }
 
+    // Test 28
+    @Test
+    void testOptimize_mixedPriorities_allStopsVisited() {
+        double[][] matrix = {
+            {0, 10, 20, 30},
+            {10, 0, 15, 25},
+            {20, 15, 0, 10},
+            {30, 25, 10, 0}
+        };
+        String[] names = {"Depot", "A", "B", "C"};
+        DeliveryGraph graph = new DeliveryGraph(matrix, names);
+        List<Package> packages = Arrays.asList(
+            new Package("A", "Stop A", Priority.HIGH, 5.0, "08:00", "10:00"),
+            new Package("B", "Stop B", Priority.NORMAL, 3.0, "09:00", "13:00"),
+            new Package("C", "Stop C", Priority.LOW, 2.0, "10:00", "16:00")
+        );
+
+        NearestNeighborStrategy nn = new NearestNeighborStrategy();
+        Route route = nn.optimize(graph, packages);
+
+        List<Integer> stops = route.getStops();
+        assertEquals(3, stops.size(), "All 3 stops must be visited regardless of priority mix");
+        assertTrue(stops.contains(1), "HIGH priority stop A must be visited");
+        assertTrue(stops.contains(2), "NORMAL priority stop B must be visited");
+        assertTrue(stops.contains(3), "LOW priority stop C must be visited");
+    }
+
     @Test
     void testOptimize_returnsToDepot() {
         double[][] matrix = {

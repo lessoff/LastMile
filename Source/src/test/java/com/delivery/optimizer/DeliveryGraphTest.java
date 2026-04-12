@@ -63,6 +63,36 @@ class DeliveryGraphTest {
             () -> new DeliveryGraph(matrix, names));
     }
 
+    // Test 29
+    @Test
+    void testGetNodeIndex_existingNode_returnsCorrectIndex() {
+        double[][] matrix = {
+            {0, 10, 20},
+            {10, 0, 15},
+            {20, 15, 0}
+        };
+        String[] names = {"Depot", "A", "B"};
+        DeliveryGraph graph = new DeliveryGraph(matrix, names);
+
+        assertEquals(0, graph.getNodeIndex("Depot"), "'Depot' should be at index 0");
+        assertEquals(1, graph.getNodeIndex("A"), "'A' should be at index 1");
+        assertEquals(2, graph.getNodeIndex("B"), "'B' should be at index 2");
+    }
+
+    // Test 30
+    @Test
+    void testGetNodeIndex_unknownNode_returnsNegativeOne() {
+        double[][] matrix = {
+            {0, 10},
+            {10, 0}
+        };
+        String[] names = {"Depot", "A"};
+        DeliveryGraph graph = new DeliveryGraph(matrix, names);
+
+        assertEquals(-1, graph.getNodeIndex("Z"),
+            "Querying a node name that does not exist should return -1");
+    }
+
     @Test
     void testConstructor_negativeDistance_throwsInvalidMatrixException() {
         double[][] matrix = {

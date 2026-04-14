@@ -242,7 +242,12 @@
   table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
   }
+
+  #compTable { table-layout: auto; }
+  #compTable td, #compTable th { white-space: nowrap; max-width: none; }
+  #compTable td.route-cell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
 
   th {
     text-align: left;
@@ -260,6 +265,14 @@
     font-size: 0.88rem;
     border-bottom: 1px solid rgba(74,128,160,0.1);
     white-space: nowrap;
+    max-width: 0;
+  }
+
+  td.route-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
   }
 
   tr:hover td { background: rgba(74,128,160,0.05); }
@@ -568,7 +581,10 @@ E,31,40,25,18,19,0</textarea>
 
     <!-- Stop breakdown -->
     <div class="table-panel">
-      <div class="panel-title">Per-Stop Breakdown</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem">
+        <div class="panel-title" style="margin-bottom:0">Per-Stop Breakdown</div>
+        <button class="algo-tab" onclick="saveReport()" style="border-color:var(--success);color:var(--success);font-size:0.78rem">&#8681; Save Report</button>
+      </div>
       <table id="stopTable">
         <thead>
           <tr><th>#</th><th>Stop</th><th>Address</th><th>Priority</th><th>Weight</th><th>Arrival</th><th>Time Window</th><th>Status</th></tr>
@@ -1169,7 +1185,7 @@ function playAnimation() {
   });
 
   // Draw a node
-  function drawNode(i, highlight) {
+  function drawNode(i, highlight, revealedUpTo) {
     const pos = positions[i];
     const isDepot = i === 0;
     const pkg = packages.find(p => p.id === nodeNames[i]);
@@ -1200,6 +1216,22 @@ function playAnimation() {
       ctx.fillStyle = 'rgba(160,210,206,0.6)';
       ctx.font = '9px sans-serif';
       ctx.fillText(pkg.label, pos.x, pos.y + nodeR + 14);
+    }
+
+    // Sequence badge: show step number once node has been reached
+    if (!isDepot && revealedUpTo !== undefined) {
+      const seqIdx = route.indexOf(i);
+      if (seqIdx > 0 && seqIdx <= revealedUpTo) {
+        ctx.beginPath();
+        ctx.arc(pos.x + nodeR - 2, pos.y - nodeR + 2, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#4A80A0';
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(seqIdx, pos.x + nodeR - 2, pos.y - nodeR + 2);
+      }
     }
   }
 
@@ -1263,7 +1295,7 @@ function playAnimation() {
     }
 
     // All nodes
-    positions.forEach((_, i) => drawNode(i, i === (activeTo !== null ? activeTo : route[upTo])));
+    positions.forEach((_, i) => drawNode(i, i === (activeTo !== null ? activeTo : route[upTo]), upTo));
 
     // Legend
     ctx.fillStyle = 'rgba(160,210,206,0.7)'; ctx.font = 'bold 11px sans-serif';
@@ -1340,7 +1372,7 @@ function renderStats() {
   if (numTrips > 1) {
     const badge = document.createElement('div');
     badge.id = 'tripBadge';
-    badge.style.cssText = 'background:var(--dark);border:1px solid var(--blue);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;margin-bottom:0.5rem;font-size:0.85rem;color:var(--accent)';
+    badge.style.cssText = 'background:var(--dark);border:1px solid var(--blue);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;margin-bottom:0.5rem;font-size:0.85rem;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
     badge.innerHTML = `Vehicle capacity active — <strong>${numTrips} trips</strong> required · Total: <strong>${r.distance} km</strong>`;
     document.getElementById('statsRow').before(badge);
   }
@@ -1355,7 +1387,7 @@ function renderCompTable(nodeNames) {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td>${r.name}${r.isBest ? ' <span style="color:var(--success)">★</span>' : ''}</td>
-      <td style="font-family:monospace;font-size:0.82rem">${r.routeStr}</td>
+      <td class="route-cell" style="font-family:monospace;font-size:0.82rem" title="${r.routeStr}">${r.routeStr}</td>
       <td class="${r.distance === bestDist ? 'best' : ''}">${r.distance} km</td>
       <td>${r.time} min</td>
       <td>${r.violations.length === 0 ? '<span class="badge badge-ok">None</span>' : '<span class="badge badge-late">' + r.violations.length + '</span>'}</td>
@@ -2109,6 +2141,115 @@ function runAllTests() {
 }
 
 // Auto-run on load
+// ================================================================
+//  SAVE REPORT
+// ================================================================
+function saveReport() {
+  if (!results) { alert('Run optimization first.'); return; }
+
+  const r = results[activeAlgo];
+  const now = new Date();
+  const ts = now.toLocaleString();
+  const sep = '='.repeat(60);
+  const thin = '-'.repeat(60);
+
+  let lines = [];
+
+  lines.push(sep);
+  lines.push('       DELIVERY ROUTE OPTIMIZATION REPORT');
+  lines.push(sep);
+  lines.push('');
+  lines.push(`Generated : ${ts}`);
+  lines.push(`Algorithm : ${r.name}`);
+  lines.push(`Trips     : ${r.tripResults.length}`);
+  lines.push('');
+
+  // Per-trip summary
+  r.tripResults.forEach(t => {
+    if (r.tripResults.length > 1) {
+      lines.push(`--- Trip ${t.tripNum} (${t.weight} kg) ---`);
+    }
+    lines.push(`Route     : ${t.routeStr}`);
+    lines.push(`Distance  : ${t.distance} km`);
+    lines.push(`Time      : ${t.time} min`);
+    lines.push('');
+  });
+
+  if (r.tripResults.length > 1) {
+    lines.push(`Total Distance : ${r.distance} km`);
+    lines.push(`Total Time     : ${r.time} min`);
+    lines.push('');
+  }
+
+  // Per-stop breakdown
+  lines.push(thin);
+  lines.push('Per-Stop Breakdown');
+  lines.push(thin);
+  const col = (s, w) => s.toString().padEnd(w).slice(0, w);
+  lines.push(col('Stop', 6) + col('Address', 22) + col('Priority', 10) + col('Weight', 9) + col('Arrival', 9) + col('Window', 14) + 'Status');
+  lines.push(thin);
+
+  r.tripResults.forEach(t => {
+    if (r.tripResults.length > 1) lines.push(`  -- Trip ${t.tripNum} --`);
+    t.stops.forEach(s => {
+      const status = s.isLate && s.priorityViolation ? 'LATE+PRIORITY'
+                   : s.isLate ? 'LATE'
+                   : s.priorityViolation ? 'PRIORITY'
+                   : 'OK';
+      lines.push(
+        col(s.nodeName, 6) +
+        col(s.pkg.label, 22) +
+        col(s.pkg.priority, 10) +
+        col(s.pkg.weightKg + ' kg', 9) +
+        col(s.arrivalTime, 9) +
+        col(`${s.pkg.timeWindowOpen}-${s.pkg.timeWindowClose}`, 14) +
+        status
+      );
+    });
+  });
+
+  lines.push('');
+
+  // Violations
+  lines.push(thin);
+  lines.push('Constraint Violations');
+  lines.push(thin);
+  if (r.violations.length === 0) {
+    lines.push('  No violations detected.');
+  } else {
+    r.violations.forEach(v => lines.push(`  [!] ${v}`));
+  }
+  lines.push('');
+
+  // Algorithm comparison
+  lines.push(thin);
+  lines.push('Algorithm Comparison');
+  lines.push(thin);
+  lines.push(col('Algorithm', 24) + col('Distance', 12) + col('Time', 10) + 'Violations');
+  lines.push(thin);
+  results.forEach(res => {
+    lines.push(
+      col(res.name + (res.isBest ? ' *' : ''), 24) +
+      col(res.distance + ' km', 12) +
+      col(res.time + ' min', 10) +
+      res.violations.length
+    );
+  });
+  lines.push('  * Best algorithm');
+  lines.push('');
+  lines.push(sep);
+  lines.push('  LastMile Delivery Route Optimizer — CS3342 Software Design');
+  lines.push(sep);
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lastmile_report_${now.toISOString().slice(0,19).replace(/[T:]/g,'-')}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 window.addEventListener('load', runOptimization);
 window.addEventListener('resize', () => {
   if (results) renderCanvas(lastNodeNames, lastMatrix, lastPackages);

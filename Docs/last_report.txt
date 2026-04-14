@@ -2,25 +2,33 @@
            DELIVERY ROUTE OPTIMIZATION REPORT
 ==========================================================
 
-Algorithm: 2-Opt Improvement
-Route:     Depot → A → B → E → C → D → Depot
-Total Distance: 107.00 km
-Estimated Travel Time: 161 minutes
+Algorithm: Nearest Neighbor
+Route:     Depot → C → Depot
+Total Distance: 42.00 km
+Estimated Travel Time: 63 minutes
 
 --- Per-Stop Breakdown ---
   Stop   Label                Priority   Weight     Arrival    Time Window    
   ----   ----                 --------   ------     -------    -----------    
-  A      123 Main St          HIGH       5.0 kg     08:43 [OK] 08:00-10:00    
-  B      456 Oak Ave          NORMAL     8.0 kg     09:06 [OK] 09:00-14:00    
-  E      654 Maple Dr         NORMAL     7.0 kg     09:43 [LATE] 10:00-15:00    
-  C      789 Pine Rd          LOW        6.0 kg     10:10 [LATE] 08:00-09:30    
-  D      321 Elm Blvd         HIGH       4.0 kg     10:16 [OK] 08:00-11:00    
+  C      789 Pine Rd          LOW        6.0 kg     08:31 [OK] 08:00-09:30    
 
 --- Constraint Violations ---
-  * Early arrival at E: arrived at 09:43 but window opens at 10:00
-  * Late arrival at C: arrived at 10:10 but window closes at 09:30
-  * HIGH priority package D delivered after NORMAL/LOW priority packages
+  * Early arrival at B: arrived at 08:30 but window opens at 09:00
+  * Early arrival at E: arrived at 09:07 but window opens at 10:00
 
-Report generated at: 2026-04-12 18:21:07
+--- Algorithm Comparison ---
+  Algorithm                 Distance (km)   Time (min)     
+  ------------------------- -------------   -----------    
+  Nearest Neighbor (Trip 1) 73.00           110            
+  Greedy Edge Insertion (Trip 1) 73.00           110            
+  2-Opt Improvement (Trip 1) 73.00           110            
+  Nearest Neighbor (Trip 2) 76.00           114            
+  Greedy Edge Insertion (Trip 2) 76.00           114            
+  2-Opt Improvement (Trip 2) 76.00           114            
+  Nearest Neighbor (Trip 3) 42.00           63             
+  Greedy Edge Insertion (Trip 3) 42.00           63             
+  2-Opt Improvement (Trip 3) 42.00           63             
+
+Report generated at: 2026-04-12 22:09:04
 ==========================================================
 

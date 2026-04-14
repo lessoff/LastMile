@@ -1,0 +1,5 @@
+[
+  {"id":"W","label":"City Hall","priority":"HIGH","weightKg":8,"timeWindowOpen":"08:00","timeWindowClose":"09:30"},
+  {"id":"X","label":"Central Library","priority":"NORMAL","weightKg":12,"timeWindowOpen":"09:00","timeWindowClose":"14:00"},
+  {"id":"Y","label":"Sports Complex","priority":"LOW","weightKg":5,"timeWindowOpen":"10:00","timeWindowClose":"17:00"}
+]

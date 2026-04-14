@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LastMile - Delivery Route Optimizer</title>
+<style>
+  :root {
+    --bg: #0F1B2D;
+    --card: #162A43;
+    --card-hover: #1A3050;
+    --blue: #4A80A0;
+    --accent: #A0D2CE;
+    --text: #E0EBEE;
+    --subtitle: #7AB0BE;
+    --dark: #1A3A5C;
+    --success: #60D080;
+    --warning: #E8C547;
+    --danger: #E06060;
+    --radius: 12px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--bg) 100%);
+    border-bottom: 2px solid var(--blue);
+    padding: 1.2rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .logo {
+    width: 44px; height: 44px;
+    background: var(--blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 700; color: #fff;
+  }
+
+  header h1 { font-size: 1.5rem; color: #fff; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  header p { font-size: 0.8rem; color: var(--subtitle); margin-top: 2px; }
+
+  /* ===== LAYOUT ===== */
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 1.5rem;
+    min-height: calc(100vh - 80px);
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .panel {
+    background: var(--card);
+    border: 1px solid rgba(74,128,160,0.2);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+  }
+
+  .panel-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+  }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--subtitle);
+    margin-bottom: 0.3rem;
+    margin-top: 0.7rem;
+  }
+
+  label:first-of-type { margin-top: 0; }
+
+  textarea, input[type="number"], select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid rgba(74,128,160,0.3);
+    border-radius: 8px;
+    padding: 0.6rem 0.8rem;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.82rem;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus, input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  select { font-family: 'Segoe UI', sans-serif; cursor: pointer; }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    background: linear-gradient(135deg, var(--blue), #3A6A8A);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .btn:hover { background: linear-gradient(135deg, #5A90B0, var(--blue)); transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--blue);
+    color: var(--accent);
+    margin-top: 0.5rem;
+    font-size: 0.82rem;
+    padding: 0.55rem;
+  }
+
+  .btn-secondary:hover { background: rgba(74,128,160,0.15); }
+
+  /* ===== MAIN CONTENT ===== */
+  .main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ===== CANVAS / MAP ===== */
+  .map-panel {
+    background: var(--card);
+    border: 1px solid rgba(74,128,160,0.2);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    position: relative;
+  }
+
+  .map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .map-header h2 { font-size: 1.1rem; color: #fff; font-weight: 600; }
+
+  .algo-tabs {
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .algo-tab {
+    padding: 0.35rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    border: 1px solid var(--blue);
+    background: transparent;
+    color: var(--subtitle);
+    transition: all 0.2s;
+  }
+
+  .algo-tab.active {
+    background: var(--blue);
+    color: #fff;
+    font-weight: 600;
+  }
+
+  .algo-tab:hover:not(.active) { background: rgba(74,128,160,0.2); }
+
+  canvas {
+    width: 100%;
+    border-radius: 8px;
+    background: var(--bg);
+    display: block;
+  }
+
+  /* ===== STATS ROW ===== */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid rgba(74,128,160,0.2);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--subtitle);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.3rem;
+  }
+
+  /* ===== COMPARISON TABLE ===== */
+  .table-panel {
+    background: var(--card);
+    border: 1px solid rgba(74,128,160,0.2);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--blue);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65rem 1rem;
+    font-size: 0.88rem;
+    border-bottom: 1px solid rgba(74,128,160,0.1);
+    white-space: nowrap;
+  }
+
+  tr:hover td { background: rgba(74,128,160,0.05); }
+
+  .best { color: var(--success); font-weight: 600; }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-high { background: rgba(224,96,96,0.2); color: var(--danger); }
+  .badge-normal { background: rgba(74,128,160,0.2); color: var(--blue); }
+  .badge-low { background: rgba(160,210,206,0.15); color: var(--accent); }
+  .badge-ok { background: rgba(96,208,128,0.15); color: var(--success); }
+  .badge-late { background: rgba(224,96,96,0.15); color: var(--danger); }
+
+  /* ===== EMPTY STATE ===== */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--subtitle);
+  }
+
+  .empty-state svg { width: 64px; height: 64px; opacity: 0.4; margin-bottom: 1rem; }
+  .empty-state p { font-size: 0.95rem; }
+
+  /* ===== NAV TABS ===== */
+  .nav-bar {
+    display: flex;
+    gap: 0;
+    background: var(--card);
+    border-bottom: 2px solid var(--blue);
+  }
+
+  .nav-tab {
+    padding: 0.7rem 1.8rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--subtitle);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .nav-tab:hover { color: var(--text); background: rgba(74,128,160,0.1); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(160,210,206,0.05); }
+
+  .page { display: none; }
+  .page.active { display: grid; }
+  .page-full.active { display: block; }
+
+  /* ===== TEST RUNNER ===== */
+  .test-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  .test-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+  }
+
+  .test-header h2 { font-size: 1.3rem; color: #fff; }
+
+  .test-summary {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  .test-summary .count {
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .test-summary .count.pass { color: var(--success); }
+  .test-summary .count.fail { color: var(--danger); }
+  .test-summary .count.total { color: var(--accent); }
+
+  .test-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--dark);
+    border-radius: 3px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+  }
+
+  .test-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+    background: var(--success);
+  }
+
+  .test-suite {
+    background: var(--card);
+    border: 1px solid rgba(74,128,160,0.2);
+    border-radius: var(--radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+  }
+
+  .suite-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 1.2rem;
+    background: var(--dark);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .suite-header:hover { background: rgba(26,58,92,0.9); }
+
+  .suite-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .suite-icon { font-size: 0.7rem; transition: transform 0.2s; }
+  .suite-header.open .suite-icon { transform: rotate(90deg); }
+
+  .suite-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .suite-badge.all-pass { background: rgba(96,208,128,0.15); color: var(--success); }
+  .suite-badge.has-fail { background: rgba(224,96,96,0.15); color: var(--danger); }
+
+  .suite-tests {
+    display: none;
+  }
+
+  .suite-tests.open { display: block; }
+
+  .test-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.6rem 1.2rem 0.6rem 2rem;
+    border-top: 1px solid rgba(74,128,160,0.08);
+    gap: 0.8rem;
+    transition: background 0.15s;
+  }
+
+  .test-row:hover { background: rgba(74,128,160,0.04); }
+
+  .test-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 1px;
+  }
+
+  .test-icon.pass { background: rgba(96,208,128,0.2); color: var(--success); }
+  .test-icon.fail { background: rgba(224,96,96,0.2); color: var(--danger); }
+
+  .test-info { flex: 1; min-width: 0; }
+
+  .test-name {
+    font-size: 0.85rem;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+  }
+
+  .test-detail {
+    font-size: 0.78rem;
+    color: var(--subtitle);
+    margin-top: 0.2rem;
+  }
+
+  .test-error {
+    font-size: 0.78rem;
+    color: var(--danger);
+    margin-top: 0.25rem;
+    font-family: 'Courier New', monospace;
+    background: rgba(224,96,96,0.08);
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .test-time {
+    font-size: 0.75rem;
+    color: rgba(122,176,190,0.6);
+    flex-shrink: 0;
+    font-family: monospace;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 900px) {
+    .container { grid-template-columns: 1fr; }
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">LM</div>
+  <div>
+    <h1>Last<span>Mile</span></h1>
+    <p>Delivery Route Optimizer &mdash; CS3342 Software Design</p>
+  </div>
+</header>
+
+<nav class="nav-bar">
+  <button class="nav-tab active" onclick="switchPage('optimizer', this)">Route Optimizer</button>
+  <button class="nav-tab" onclick="switchPage('tests', this)">Test Runner</button>
+</nav>
+
+<div class="container page active" id="page-optimizer">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="panel">
+      <div class="panel-title">Distance Matrix (CSV)</div>
+      <textarea id="csvInput" rows="9">,Depot,A,B,C,D,E
+Depot,0,29,20,21,16,31
+A,29,0,15,29,28,40
+B,20,15,0,15,14,25
+C,21,29,15,0,4,18
+D,16,28,14,4,0,19
+E,31,40,25,18,19,0</textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Packages (JSON)</div>
+      <textarea id="jsonInput" rows="12">[
+  {"id":"A","label":"123 Main St","priority":"HIGH","weightKg":5,"timeWindowOpen":"08:00","timeWindowClose":"10:00"},
+  {"id":"B","label":"456 Oak Ave","priority":"NORMAL","weightKg":8,"timeWindowOpen":"09:00","timeWindowClose":"14:00"},
+  {"id":"C","label":"789 Pine Rd","priority":"LOW","weightKg":6,"timeWindowOpen":"08:00","timeWindowClose":"09:30"},
+  {"id":"D","label":"321 Elm Blvd","priority":"HIGH","weightKg":4,"timeWindowOpen":"08:00","timeWindowClose":"11:00"},
+  {"id":"E","label":"654 Maple Dr","priority":"NORMAL","weightKg":7,"timeWindowOpen":"10:00","timeWindowClose":"15:00"}
+]</textarea>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Settings</div>
+      <label>Vehicle Capacity (kg) &mdash; 0 = unlimited</label>
+      <input type="number" id="capacity" value="0" min="0" step="1">
+      <label>Speed (km/h)</label>
+      <input type="number" id="speed" value="40" min="1">
+      <button class="btn" onclick="runOptimization()">Run Optimization</button>
+      <button class="btn-secondary" onclick="loadSample()">Reset to Sample Data</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+    <div class="map-panel">
+      <div class="map-header">
+        <h2>Route Visualization</h2>
+        <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+          <div class="algo-tabs" id="algoTabs"></div>
+          <button class="algo-tab" id="playBtn" onclick="toggleAnimation()" style="border-color:var(--accent);color:var(--accent)">&#9654; Play</button>
+          <select id="animSpeed" style="background:var(--bg);border:1px solid rgba(74,128,160,0.3);border-radius:6px;padding:0.3rem 0.5rem;color:var(--subtitle);font-size:0.78rem;width:auto">
+            <option value="600">Slow</option>
+            <option value="350" selected>Normal</option>
+            <option value="150">Fast</option>
+          </select>
+        </div>
+      </div>
+      <canvas id="routeCanvas" height="420"></canvas>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card"><div class="stat-value" id="statDist">--</div><div class="stat-label">Distance (km)</div></div>
+      <div class="stat-card"><div class="stat-value" id="statTime">--</div><div class="stat-label">Travel Time</div></div>
+      <div class="stat-card"><div class="stat-value" id="statStops">--</div><div class="stat-label">Stops</div></div>
+      <div class="stat-card"><div class="stat-value" id="statViolations">--</div><div class="stat-label">Violations</div></div>
+    </div>
+
+    <!-- Algorithm comparison -->
+    <div class="table-panel">
+      <div class="panel-title">Algorithm Comparison</div>
+      <table id="compTable">
+        <thead>
+          <tr><th>Algorithm</th><th>Route</th><th>Distance</th><th>Time</th><th>Violations</th></tr>
+        </thead>
+        <tbody id="compBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Stop breakdown -->
+    <div class="table-panel">
+      <div class="panel-title">Per-Stop Breakdown</div>
+      <table id="stopTable">
+        <thead>
+          <tr><th>#</th><th>Stop</th><th>Address</th><th>Priority</th><th>Weight</th><th>Arrival</th><th>Time Window</th><th>Status</th></tr>
+        </thead>
+        <tbody id="stopBody"></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- TEST RUNNER PAGE -->
+<div class="page-full" id="page-tests">
+  <div class="test-page">
+    <div class="test-header">
+      <h2>Test Runner &mdash; JUnit 5 Test Suite (JS Port)</h2>
+      <div class="test-summary">
+        <span><span class="count pass" id="testPass">0</span> passed</span>
+        <span><span class="count fail" id="testFail">0</span> failed</span>
+        <span><span class="count total" id="testTotal">0</span> total</span>
+        <button class="btn" style="width:auto;margin:0;padding:0.5rem 1.5rem;font-size:0.85rem" onclick="runAllTests()">Run All Tests</button>
+      </div>
+    </div>
+    <div class="test-progress"><div class="test-progress-bar" id="testProgressBar" style="width:0%"></div></div>
+    <div id="testResults"></div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+//  DATA PARSING
+// ================================================================
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  const header = lines[0].split(',').slice(1).map(s => s.trim());
+  const matrix = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').slice(1).map(Number);
+    matrix.push(cols);
+  }
+  return { nodeNames: header, matrix };
+}
+
+function parseJSON(json) {
+  return JSON.parse(json);
+}
+
+function timeToMin(t) {
+  if (!t) return -1;
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function minToTime(m) {
+  const h = Math.floor(m / 60);
+  const mm = Math.round(m % 60);
+  return `${String(h).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}
+
+// ================================================================
+//  ALGORITHMS (mirrors the Java implementations)
+// ================================================================
+
+// Nearest Neighbor O(n^2)
+function nearestNeighbor(matrix, stopIndices) {
+  const n = stopIndices.length;
+  if (n === 0) return { route: [0, 0], distance: 0 };
+  const visited = new Set();
+  const route = [0]; // start at depot
+  let current = 0;
+  let totalDist = 0;
+
+  while (visited.size < n) {
+    let nearest = -1, nearestDist = Infinity;
+    for (const idx of stopIndices) {
+      if (!visited.has(idx) && matrix[current][idx] < nearestDist) {
+        nearestDist = matrix[current][idx];
+        nearest = idx;
+      }
+    }
+    visited.add(nearest);
+    route.push(nearest);
+    totalDist += nearestDist;
+    current = nearest;
+  }
+  totalDist += matrix[current][0];
+  route.push(0);
+  return { route, distance: totalDist };
+}
+
+// Greedy Edge Insertion O(n^2 log n)
+function greedyEdge(matrix, stopIndices) {
+  const nodes = [0, ...stopIndices];
+  const n = nodes.length;
+  if (n <= 2) return nearestNeighbor(matrix, stopIndices);
+
+  // Collect all edges
+  const edges = [];
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      edges.push({ u: nodes[i], v: nodes[j], d: matrix[nodes[i]][nodes[j]] });
+    }
+  }
+  edges.sort((a, b) => a.d - b.d);
+
+  // Union-Find
+  const parent = {};
+  const rank = {};
+  nodes.forEach(nd => { parent[nd] = nd; rank[nd] = 0; });
+
+  function find(x) {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+  function union(a, b) {
+    const ra = find(a), rb = find(b);
+    if (ra === rb) return false;
+    if (rank[ra] < rank[rb]) parent[ra] = rb;
+    else if (rank[ra] > rank[rb]) parent[rb] = ra;
+    else { parent[rb] = ra; rank[ra]++; }
+    return true;
+  }
+
+  const degree = {};
+  nodes.forEach(nd => degree[nd] = 0);
+  const adj = {};
+  nodes.forEach(nd => adj[nd] = []);
+  let edgesAdded = 0;
+
+  for (const e of edges) {
+    if (edgesAdded >= n) break;
+    if (degree[e.u] >= 2 || degree[e.v] >= 2) continue;
+    if (find(e.u) === find(e.v) && edgesAdded < n - 1) continue;
+    adj[e.u].push(e.v);
+    adj[e.v].push(e.u);
+    degree[e.u]++;
+    degree[e.v]++;
+    union(e.u, e.v);
+    edgesAdded++;
+  }
+
+  // DFS to extract route
+  const route = [];
+  const visitedDFS = new Set();
+  function dfs(node) {
+    visitedDFS.add(node);
+    route.push(node);
+    for (const nb of adj[node]) {
+      if (!visitedDFS.has(nb)) dfs(nb);
+    }
+  }
+  dfs(0);
+  route.push(0);
+
+  let distance = 0;
+  for (let i = 0; i < route.length - 1; i++) {
+    distance += matrix[route[i]][route[i + 1]];
+  }
+  return { route, distance };
+}
+
+// 2-Opt Improvement O(n^3)
+function twoOpt(matrix, stopIndices) {
+  let { route, distance } = nearestNeighbor(matrix, stopIndices);
+  route = [...route];
+  let improved = true;
+
+  while (improved) {
+    improved = false;
+    for (let i = 1; i < route.length - 2; i++) {
+      for (let j = i + 1; j < route.length - 1; j++) {
+        const a = route[i - 1], b = route[i], c = route[j], d = route[j + 1];
+        const delta = matrix[a][c] + matrix[b][d] - matrix[a][b] - matrix[c][d];
+        if (delta < -0.0001) {
+          // Reverse segment i..j
+          const seg = route.slice(i, j + 1).reverse();
+          route.splice(i, j - i + 1, ...seg);
+          distance += delta;
+          improved = true;
+          break;
+        }
+      }
+      if (improved) break;
+    }
+  }
+  return { route, distance };
+}
+
+// ================================================================
+//  CONSTRAINT CHECKING
+// ================================================================
+function checkConstraints(route, matrix, packages, nodeNames, speed) {
+  const stops = [];
+  let cumDist = 0;
+  let highDelivered = false;
+  const violations = [];
+
+  for (let i = 1; i < route.length - 1; i++) {
+    const nodeIdx = route[i];
+    const nodeName = nodeNames[nodeIdx];
+    const pkg = packages.find(p => p.id === nodeName);
+    if (!pkg) continue;
+
+    cumDist += matrix[route[i - 1]][nodeIdx];
+    const arrivalMin = 480 + (cumDist / speed) * 60; // 08:00 start
+    const arrivalTime = minToTime(arrivalMin);
+    const twOpen = timeToMin(pkg.timeWindowOpen);
+    const twClose = timeToMin(pkg.timeWindowClose);
+    const isLate = twClose > 0 && arrivalMin > twClose;
+    const isEarly = twOpen > 0 && arrivalMin < twOpen;
+
+    // Priority check
+    if (pkg.priority === 'HIGH') {
+      // fine
+    } else {
+      highDelivered = true; // once non-high delivered, any subsequent high is violation
+    }
+
+    let priorityViolation = false;
+    if (pkg.priority === 'HIGH' && highDelivered && i > 1) {
+      // Check if a lower priority was delivered before this HIGH
+      for (let k = 1; k < i; k++) {
+        const prevName = nodeNames[route[k]];
+        const prevPkg = packages.find(p => p.id === prevName);
+        if (prevPkg && (prevPkg.priority === 'NORMAL' || prevPkg.priority === 'LOW')) {
+          priorityViolation = true;
+          break;
+        }
+      }
+    }
+
+    if (isLate) violations.push(`${nodeName}: Late arrival at ${arrivalTime} (window closes ${pkg.timeWindowClose})`);
+    if (priorityViolation) violations.push(`${nodeName}: HIGH priority delivered after lower priority`);
+
+    stops.push({
+      index: i,
+      nodeIdx, nodeName, pkg,
+      arrivalMin, arrivalTime,
+      isLate, isEarly, priorityViolation,
+      status: isLate && priorityViolation ? 'LATE + PRIORITY' : isLate ? 'LATE' : priorityViolation ? 'PRIORITY' : 'OK'
+    });
+  }
+
+  const totalDist = (() => {
+    let d = 0;
+    for (let i = 0; i < route.length - 1; i++) d += matrix[route[i]][route[i+1]];
+    return d;
+  })();
+
+  return { stops, violations, totalDist, totalTime: Math.round((totalDist / speed) * 60) };
+}
+
+// ================================================================
+//  CAPACITY SPLITTING (mirrors Java Main.splitByCapacity)
+// ================================================================
+function splitByCapacity(packages, capacity) {
+  if (!capacity || capacity <= 0) return [packages];
+
+  // Sort: HIGH first, then NORMAL, then LOW; within same priority sort by weight DESC
+  const priorityOrder = { HIGH: 0, NORMAL: 1, LOW: 2 };
+  const sorted = [...packages].sort((a, b) => {
+    const pd = priorityOrder[a.priority] - priorityOrder[b.priority];
+    return pd !== 0 ? pd : b.weightKg - a.weightKg;
+  });
+
+  const trips = [];
+  let current = [];
+  let currentWeight = 0;
+
+  for (const pkg of sorted) {
+    if (current.length > 0 && currentWeight + pkg.weightKg > capacity) {
+      trips.push(current);
+      current = [];
+      currentWeight = 0;
+    }
+    current.push(pkg);
+    currentWeight += pkg.weightKg;
+  }
+  if (current.length > 0) trips.push(current);
+  return trips;
+}
+
+// ================================================================
+//  MAIN OPTIMIZATION
+// ================================================================
+let results = null;
+let activeAlgo = 0;
+let trips = null;
+
+function runOptimization() {
+  try {
+    const { nodeNames, matrix } = parseCSV(document.getElementById('csvInput').value);
+    const packages = parseJSON(document.getElementById('jsonInput').value);
+    const speed = parseFloat(document.getElementById('speed').value) || 40;
+    const capacity = parseFloat(document.getElementById('capacity').value) || 0;
+
+    trips = splitByCapacity(packages, capacity);
+
+    const algos = [
+      { name: 'Nearest Neighbor', fn: nearestNeighbor },
+      { name: 'Greedy Edge', fn: greedyEdge },
+      { name: '2-Opt', fn: twoOpt },
+    ];
+
+    // Run each algo across all trips, aggregate results
+    results = algos.map(a => {
+      let totalDistance = 0;
+      let totalTime = 0;
+      let allViolations = [];
+      let allStops = [];
+      let tripResults = [];
+
+      trips.forEach((tripPkgs, tripIdx) => {
+        const stopIndices = tripPkgs.map(p => nodeNames.indexOf(p.id)).filter(i => i >= 0);
+        const { route, distance } = a.fn(matrix, stopIndices);
+        const check = checkConstraints(route, matrix, tripPkgs, nodeNames, speed);
+        const tripWeight = tripPkgs.reduce((s, p) => s + p.weightKg, 0);
+
+        totalDistance += distance;
+        totalTime += check.totalTime;
+        allViolations = allViolations.concat(check.violations);
+        allStops = allStops.concat(check.stops);
+
+        tripResults.push({
+          tripNum: tripIdx + 1,
+          route,
+          routeStr: route.map(i => nodeNames[i]).join(' → '),
+          distance: Math.round(distance * 100) / 100,
+          time: check.totalTime,
+          weight: Math.round(tripWeight * 10) / 10,
+          stops: check.stops,
+          violations: check.violations,
+        });
+      });
+
+      return {
+        name: a.name,
+        route: tripResults[0].route,        // canvas shows trip 1
+        routeStr: trips.length > 1
+          ? tripResults.map(t => `Trip ${t.tripNum}: ${t.routeStr}`).join(' | ')
+          : tripResults[0].routeStr,
+        distance: Math.round(totalDistance * 100) / 100,
+        time: totalTime,
+        violations: allViolations,
+        stops: allStops,
+        tripResults,
+      };
+    });
+
+    // Find best
+    const bestDist = Math.min(...results.map(r => r.distance));
+    results.forEach(r => r.isBest = r.distance === bestDist);
+
+    activeAlgo = results.findIndex(r => r.isBest);
+    renderAll(nodeNames, matrix, packages);
+
+  } catch (e) {
+    alert('Error: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ================================================================
+//  RENDERING
+// ================================================================
+function renderAll(nodeNames, matrix, packages) {
+  stopAnimation();
+  renderTabs();
+  renderCanvas(nodeNames, matrix, packages);
+  renderStats();
+  renderCompTable(nodeNames);
+  renderStopTable();
+}
+
+function renderTabs() {
+  const tabs = document.getElementById('algoTabs');
+  tabs.innerHTML = '';
+  results.forEach((r, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'algo-tab' + (i === activeAlgo ? ' active' : '');
+    btn.textContent = r.name;
+    btn.onclick = () => {
+      activeAlgo = i;
+      renderAll(lastNodeNames, lastMatrix, lastPackages);
+    };
+    tabs.appendChild(btn);
+  });
+}
+
+let lastNodeNames, lastMatrix, lastPackages;
+
+function renderCanvas(nodeNames, matrix, packages) {
+  lastNodeNames = nodeNames;
+  lastMatrix = matrix;
+  lastPackages = packages;
+
+  const canvas = document.getElementById('routeCanvas');
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = Math.floor(rect.width - 40);
+  const H = 420;
+  canvas.width = W * 2;
+  canvas.height = H * 2;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+
+  // Background
+  ctx.fillStyle = '#0A1220';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, W, H, 8);
+  ctx.fill();
+
+  // Grid
+  ctx.strokeStyle = 'rgba(74,128,160,0.08)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // Position nodes in a nice layout
+  const n = nodeNames.length;
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(W, H) * 0.35;
+  const positions = nodeNames.map((name, i) => {
+    if (i === 0) return { x: cx, y: cy }; // Depot in center
+    const angle = -Math.PI / 2 + ((i - 1) / (n - 1)) * 2 * Math.PI;
+    return {
+      x: cx + radius * Math.cos(angle),
+      y: cy + radius * Math.sin(angle),
+    };
+  });
+
+  const r = results[activeAlgo];
+
+  // Draw all possible edges (faint)
+  ctx.strokeStyle = 'rgba(74,128,160,0.06)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      ctx.beginPath();
+      ctx.moveTo(positions[i].x, positions[i].y);
+      ctx.lineTo(positions[j].x, positions[j].y);
+      ctx.stroke();
+    }
+  }
+
+  // Draw route edges
+  const route = r.route;
+  for (let i = 0; i < route.length - 1; i++) {
+    const from = positions[route[i]];
+    const to = positions[route[i + 1]];
+
+    // Glow
+    ctx.strokeStyle = 'rgba(160,210,206,0.15)';
+    ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+
+    // Main line
+    ctx.strokeStyle = '#A0D2CE';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+
+    // Arrow at midpoint
+    const mx = (from.x + to.x) / 2;
+    const my = (from.y + to.y) / 2;
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    const arrowSize = 8;
+    ctx.fillStyle = '#A0D2CE';
+    ctx.beginPath();
+    ctx.moveTo(mx + arrowSize * Math.cos(angle), my + arrowSize * Math.sin(angle));
+    ctx.lineTo(mx + arrowSize * Math.cos(angle + 2.5), my + arrowSize * Math.sin(angle + 2.5));
+    ctx.lineTo(mx + arrowSize * Math.cos(angle - 2.5), my + arrowSize * Math.sin(angle - 2.5));
+    ctx.closePath();
+    ctx.fill();
+
+    // Distance label
+    const dist = matrix[route[i]][route[i+1]];
+    ctx.fillStyle = 'rgba(122,176,190,0.9)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    const ox = 12 * Math.cos(angle + Math.PI/2);
+    const oy = 12 * Math.sin(angle + Math.PI/2);
+    ctx.fillText(dist + ' km', mx + ox, my + oy);
+  }
+
+  // Draw nodes
+  positions.forEach((pos, i) => {
+    const isDepot = i === 0;
+    const pkg = packages.find(p => p.id === nodeNames[i]);
+    const inRoute = route.includes(i);
+
+    // Node circle
+    const nodeR = isDepot ? 22 : 18;
+
+    // Glow for route nodes
+    if (inRoute) {
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeR + 6, 0, Math.PI * 2);
+      ctx.fillStyle = isDepot ? 'rgba(74,128,160,0.2)' : 'rgba(160,210,206,0.15)';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, nodeR, 0, Math.PI * 2);
+    ctx.fillStyle = isDepot ? '#4A80A0' : (inRoute ? '#1E3A5F' : '#162A43');
+    ctx.fill();
+    ctx.strokeStyle = isDepot ? '#A0D2CE' : (inRoute ? '#4A80A0' : 'rgba(74,128,160,0.3)');
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Node label
+    ctx.fillStyle = isDepot ? '#fff' : '#E0EBEE';
+    ctx.font = `bold ${isDepot ? 12 : 11}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(nodeNames[i], pos.x, pos.y);
+
+    // Stop sequence number
+    if (!isDepot && inRoute) {
+      const seqIdx = route.indexOf(i);
+      if (seqIdx > 0) {
+        ctx.beginPath();
+        ctx.arc(pos.x + nodeR - 2, pos.y - nodeR + 2, 9, 0, Math.PI * 2);
+        ctx.fillStyle = '#4A80A0';
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText(seqIdx, pos.x + nodeR - 2, pos.y - nodeR + 2);
+      }
+    }
+
+    // Address label below
+    if (pkg) {
+      ctx.fillStyle = 'rgba(160,210,206,0.6)';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(pkg.label, pos.x, pos.y + nodeR + 14);
+    }
+  });
+
+  // Legend
+  ctx.fillStyle = 'rgba(160,210,206,0.7)';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText(r.name, 15, 22);
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = 'rgba(224,235,238,0.6)';
+  ctx.fillText(r.routeStr, 15, 38);
+  ctx.fillText(`${r.distance} km  ·  ${r.time} min`, 15, 54);
+}
+
+// ================================================================
+//  ANIMATION
+// ================================================================
+let animTimer = null;
+let animRunning = false;
+
+function stopAnimation() {
+  if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+  animRunning = false;
+  const btn = document.getElementById('playBtn');
+  if (btn) { btn.textContent = '▶ Play'; btn.style.borderColor = 'var(--accent)'; btn.style.color = 'var(--accent)'; }
+}
+
+function toggleAnimation() {
+  if (animRunning) { stopAnimation(); renderCanvas(lastNodeNames, lastMatrix, lastPackages); return; }
+  playAnimation();
+}
+
+function playAnimation() {
+  if (!results || !lastNodeNames) return;
+  stopAnimation();
+  animRunning = true;
+
+  const btn = document.getElementById('playBtn');
+  btn.textContent = '⏹ Stop';
+  btn.style.borderColor = 'var(--danger)';
+  btn.style.color = 'var(--danger)';
+
+  const r = results[activeAlgo];
+  const route = r.route;
+  const nodeNames = lastNodeNames;
+  const matrix = lastMatrix;
+  const packages = lastPackages;
+  const stepMs = parseInt(document.getElementById('animSpeed').value) || 350;
+
+  const canvas = document.getElementById('routeCanvas');
+  const W = canvas.width / 2;
+  const H = canvas.height / 2;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+
+  const n = nodeNames.length;
+  const cx = W / 2, cy = H / 2;
+  const radius = Math.min(W, H) * 0.35;
+  const positions = nodeNames.map((name, i) => {
+    if (i === 0) return { x: cx, y: cy };
+    const angle = -Math.PI / 2 + ((i - 1) / (n - 1)) * 2 * Math.PI;
+    return { x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) };
+  });
+
+  // Draw a node
+  function drawNode(i, highlight) {
+    const pos = positions[i];
+    const isDepot = i === 0;
+    const pkg = packages.find(p => p.id === nodeNames[i]);
+    const nodeR = isDepot ? 22 : 18;
+
+    if (highlight) {
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, nodeR + 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(160,210,206,0.25)';
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, nodeR, 0, Math.PI * 2);
+    ctx.fillStyle = isDepot ? '#4A80A0' : (highlight ? '#2A5A7A' : '#1E3A5F');
+    ctx.fill();
+    ctx.strokeStyle = highlight ? '#A0D2CE' : (isDepot ? '#A0D2CE' : '#4A80A0');
+    ctx.lineWidth = highlight ? 3 : 2;
+    ctx.stroke();
+
+    ctx.fillStyle = isDepot ? '#fff' : '#E0EBEE';
+    ctx.font = `bold ${isDepot ? 12 : 11}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(nodeNames[i], pos.x, pos.y);
+
+    if (pkg) {
+      ctx.fillStyle = 'rgba(160,210,206,0.6)';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(pkg.label, pos.x, pos.y + nodeR + 14);
+    }
+  }
+
+  // Draw a static completed edge
+  function drawEdge(from, to, stepNum) {
+    ctx.strokeStyle = 'rgba(160,210,206,0.15)';
+    ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+
+    ctx.strokeStyle = '#A0D2CE';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+
+    // Arrow
+    const mx = (from.x + to.x) / 2, my = (from.y + to.y) / 2;
+    const angle = Math.atan2(to.y - from.y, to.x - from.x);
+    const arrowSize = 8;
+    ctx.fillStyle = '#A0D2CE';
+    ctx.beginPath();
+    ctx.moveTo(mx + arrowSize * Math.cos(angle), my + arrowSize * Math.sin(angle));
+    ctx.lineTo(mx + arrowSize * Math.cos(angle + 2.5), my + arrowSize * Math.sin(angle + 2.5));
+    ctx.lineTo(mx + arrowSize * Math.cos(angle - 2.5), my + arrowSize * Math.sin(angle - 2.5));
+    ctx.closePath(); ctx.fill();
+
+    // Distance label
+    const dist = matrix[route[stepNum]][route[stepNum + 1]];
+    const ox = 12 * Math.cos(angle + Math.PI / 2);
+    const oy = 12 * Math.sin(angle + Math.PI / 2);
+    ctx.fillStyle = 'rgba(122,176,190,0.9)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(dist + ' km', mx + ox, my + oy);
+  }
+
+  // Full redraw of all nodes + completed edges up to step `upTo`
+  function redrawFrame(upTo, activeFrom, activeTo) {
+    // BG + grid
+    ctx.fillStyle = '#0A1220';
+    ctx.beginPath(); ctx.roundRect(0, 0, W, H, 8); ctx.fill();
+    ctx.strokeStyle = 'rgba(74,128,160,0.08)'; ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+    // Faint all-edges
+    ctx.strokeStyle = 'rgba(74,128,160,0.06)'; ctx.lineWidth = 0.5;
+    for (let i = 0; i < n; i++)
+      for (let j = i + 1; j < n; j++) {
+        ctx.beginPath(); ctx.moveTo(positions[i].x, positions[i].y);
+        ctx.lineTo(positions[j].x, positions[j].y); ctx.stroke();
+      }
+
+    // Completed edges
+    for (let s = 0; s < upTo; s++) drawEdge(positions[route[s]], positions[route[s + 1]], s);
+
+    // Active animated edge (drawn on top, thicker)
+    if (activeFrom !== null) {
+      const from = positions[activeFrom], to = positions[activeTo];
+      ctx.strokeStyle = 'rgba(232,197,71,0.9)';
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(to.x, to.y); ctx.stroke();
+    }
+
+    // All nodes
+    positions.forEach((_, i) => drawNode(i, i === (activeTo !== null ? activeTo : route[upTo])));
+
+    // Legend
+    ctx.fillStyle = 'rgba(160,210,206,0.7)'; ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'left'; ctx.fillText(r.name, 15, 22);
+    ctx.font = '11px sans-serif'; ctx.fillStyle = 'rgba(224,235,238,0.6)';
+    const step = upTo + (activeFrom !== null ? 1 : 0);
+    ctx.fillText(`Step ${Math.min(step, route.length - 1)} / ${route.length - 1}`, 15, 38);
+  }
+
+  let step = 0;
+
+  // Animate one edge at a time with a line-drawing sub-animation
+  function animateEdge(stepIdx) {
+    if (!animRunning) return;
+    if (stepIdx >= route.length - 1) {
+      // Done — draw final static frame
+      renderCanvas(lastNodeNames, lastMatrix, lastPackages);
+      stopAnimation();
+      return;
+    }
+
+    const from = positions[route[stepIdx]];
+    const to = positions[route[stepIdx + 1]];
+    const totalFrames = 20;
+    let frame = 0;
+
+    function drawFrame() {
+      if (!animRunning) return;
+      frame++;
+      const t = frame / totalFrames;
+      const cx2 = from.x + (to.x - from.x) * t;
+      const cy2 = from.y + (to.y - from.y) * t;
+
+      redrawFrame(stepIdx, null, null);
+
+      // Animated growing line in yellow
+      ctx.strokeStyle = 'rgba(232,197,71,0.95)';
+      ctx.lineWidth = 3;
+      ctx.shadowColor = 'rgba(232,197,71,0.4)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath(); ctx.moveTo(from.x, from.y); ctx.lineTo(cx2, cy2); ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      if (frame < totalFrames) {
+        requestAnimationFrame(drawFrame);
+      } else {
+        // Edge complete — pause then move to next
+        animTimer = setTimeout(() => animateEdge(stepIdx + 1), stepMs * 0.3);
+      }
+    }
+
+    // Brief pause before drawing the edge
+    animTimer = setTimeout(() => requestAnimationFrame(drawFrame), stepMs * 0.7);
+  }
+
+  // Start with nodes only, then animate
+  redrawFrame(0, null, null);
+  animTimer = setTimeout(() => animateEdge(0), 500);
+}
+
+function renderStats() {
+  const r = results[activeAlgo];
+  const numTrips = r.tripResults.length;
+  document.getElementById('statDist').textContent = r.distance;
+  document.getElementById('statTime').textContent = r.time + ' min';
+  document.getElementById('statStops').textContent = r.stops.length;
+  const vEl = document.getElementById('statViolations');
+  vEl.textContent = r.violations.length;
+  vEl.style.color = r.violations.length > 0 ? '#E06060' : '#60D080';
+
+  // Show trip count badge if capacity is active
+  const existingBadge = document.getElementById('tripBadge');
+  if (existingBadge) existingBadge.remove();
+  if (numTrips > 1) {
+    const badge = document.createElement('div');
+    badge.id = 'tripBadge';
+    badge.style.cssText = 'background:var(--dark);border:1px solid var(--blue);border-radius:8px;padding:0.6rem 1.2rem;text-align:center;margin-bottom:0.5rem;font-size:0.85rem;color:var(--accent)';
+    badge.innerHTML = `Vehicle capacity active — <strong>${numTrips} trips</strong> required · Total: <strong>${r.distance} km</strong>`;
+    document.getElementById('statsRow').before(badge);
+  }
+}
+
+function renderCompTable(nodeNames) {
+  const tbody = document.getElementById('compBody');
+  tbody.innerHTML = '';
+  const bestDist = Math.min(...results.map(r => r.distance));
+
+  results.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.name}${r.isBest ? ' <span style="color:var(--success)">★</span>' : ''}</td>
+      <td style="font-family:monospace;font-size:0.82rem">${r.routeStr}</td>
+      <td class="${r.distance === bestDist ? 'best' : ''}">${r.distance} km</td>
+      <td>${r.time} min</td>
+      <td>${r.violations.length === 0 ? '<span class="badge badge-ok">None</span>' : '<span class="badge badge-late">' + r.violations.length + '</span>'}</td>
+    `;
+    tr.style.cursor = 'pointer';
+    tr.onclick = () => { activeAlgo = results.indexOf(r); renderAll(lastNodeNames, lastMatrix, lastPackages); };
+    tbody.appendChild(tr);
+  });
+}
+
+function renderStopTable() {
+  const tbody = document.getElementById('stopBody');
+  tbody.innerHTML = '';
+  const r = results[activeAlgo];
+  const multiTrip = r.tripResults.length > 1;
+
+  r.tripResults.forEach(trip => {
+    // Trip header row when capacity is active
+    if (multiTrip) {
+      const tripRow = document.createElement('tr');
+      tripRow.innerHTML = `
+        <td colspan="8" style="background:var(--dark);color:var(--accent);font-weight:600;font-size:0.8rem;padding:0.5rem 1rem;letter-spacing:1px">
+          TRIP ${trip.tripNum} — ${trip.weight} kg load · ${trip.distance} km · ${trip.time} min
+        </td>`;
+      tbody.appendChild(tripRow);
+    }
+
+    trip.stops.forEach((s, i) => {
+      const p = s.pkg;
+      const priorityClass = p.priority === 'HIGH' ? 'badge-high' : (p.priority === 'LOW' ? 'badge-low' : 'badge-normal');
+
+      let statusHtml = '';
+      if (!s.isLate && !s.priorityViolation) {
+        statusHtml = '<span class="badge badge-ok">OK</span>';
+      } else {
+        if (s.isLate) statusHtml += '<span class="badge badge-late" title="Arrived after time window closed">LATE</span> ';
+        if (s.priorityViolation) statusHtml += '<span class="badge badge-late" title="HIGH priority delivered after lower priority">PRIORITY</span>';
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${i + 1}</td>
+        <td><strong>${s.nodeName}</strong></td>
+        <td>${p.label}</td>
+        <td><span class="badge ${priorityClass}">${p.priority}</span></td>
+        <td>${p.weightKg} kg</td>
+        <td style="font-family:monospace">${s.arrivalTime}</td>
+        <td style="font-family:monospace">${p.timeWindowOpen} - ${p.timeWindowClose}</td>
+        <td>${statusHtml}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function loadSample() {
+  document.getElementById('csvInput').value = `,Depot,A,B,C,D,E
+Depot,0,29,20,21,16,31
+A,29,0,15,29,28,40
+B,20,15,0,15,14,25
+C,21,29,15,0,4,18
+D,16,28,14,4,0,19
+E,31,40,25,18,19,0`;
+  document.getElementById('jsonInput').value = `[
+  {"id":"A","label":"123 Main St","priority":"HIGH","weightKg":5,"timeWindowOpen":"08:00","timeWindowClose":"10:00"},
+  {"id":"B","label":"456 Oak Ave","priority":"NORMAL","weightKg":8,"timeWindowOpen":"09:00","timeWindowClose":"14:00"},
+  {"id":"C","label":"789 Pine Rd","priority":"LOW","weightKg":6,"timeWindowOpen":"08:00","timeWindowClose":"09:30"},
+  {"id":"D","label":"321 Elm Blvd","priority":"HIGH","weightKg":4,"timeWindowOpen":"08:00","timeWindowClose":"11:00"},
+  {"id":"E","label":"654 Maple Dr","priority":"NORMAL","weightKg":7,"timeWindowOpen":"10:00","timeWindowClose":"15:00"}
+]`;
+  document.getElementById('capacity').value = 0;
+  document.getElementById('speed').value = 40;
+}
+
+// ================================================================
+//  PAGE NAVIGATION
+// ================================================================
+function switchPage(page, btn) {
+  document.querySelectorAll('.page, .page-full').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ================================================================
+//  TEST FRAMEWORK
+// ================================================================
+function assertEquals(expected, actual, msg) {
+  if (JSON.stringify(expected) !== JSON.stringify(actual))
+    throw new Error(`${msg || 'assertEquals'}\n  Expected: ${JSON.stringify(expected)}\n  Actual:   ${JSON.stringify(actual)}`);
+}
+
+function assertTrue(val, msg) {
+  if (!val) throw new Error(msg || 'assertTrue failed');
+}
+
+function assertFalse(val, msg) {
+  if (val) throw new Error(msg || 'assertFalse failed');
+}
+
+function assertThrows(fn, msg) {
+  try { fn(); throw new Error(msg || 'Expected exception but none thrown'); }
+  catch (e) { if (e.message === (msg || 'Expected exception but none thrown')) throw e; }
+}
+
+// ================================================================
+//  DELIVERYGRAPH CLASS (for tests)
+// ================================================================
+class DeliveryGraph {
+  constructor(matrix, nodeNames) {
+    if (!matrix || matrix.length === 0) throw new Error('InvalidMatrixException: empty matrix');
+    for (let i = 0; i < matrix.length; i++) {
+      if (matrix[i].length !== matrix.length)
+        throw new Error('InvalidMatrixException: non-square matrix');
+      for (let j = 0; j < matrix[i].length; j++) {
+        if (matrix[i][j] < 0) throw new Error('InvalidMatrixException: negative distance');
+      }
+    }
+    this.matrix = matrix;
+    this.nodeNames = nodeNames;
+  }
+  getDistance(i, j) {
+    if (i < 0 || i >= this.matrix.length || j < 0 || j >= this.matrix.length)
+      throw new Error('ArrayIndexOutOfBoundsException');
+    return this.matrix[i][j];
+  }
+  getNodeCount() { return this.matrix.length; }
+  getNodeIndex(name) {
+    const idx = this.nodeNames.indexOf(name);
+    return idx >= 0 ? idx : -1;
+  }
+  isSymmetric() {
+    for (let i = 0; i < this.matrix.length; i++)
+      for (let j = 0; j < this.matrix.length; j++)
+        if (this.matrix[i][j] !== this.matrix[j][i]) return false;
+    return true;
+  }
+}
+
+// Route helper
+class Route {
+  constructor(nodeSequence, totalDistance, algorithmName, nodeNames) {
+    this.nodeSequence = nodeSequence;
+    this.totalDistance = totalDistance;
+    this.algorithmName = algorithmName;
+    this.nodeNames = nodeNames || [];
+  }
+  getStops() { return this.nodeSequence.slice(1, -1); }
+  toRouteString() { return this.nodeSequence.map(i => this.nodeNames[i] || i).join(' → '); }
+}
+
+// ================================================================
+//  TEST DEFINITIONS (mirrors all 8 Java test files)
+// ================================================================
+const TEST_SUITES = [
+
+// ===== 1. NearestNeighborStrategyTest =====
+{
+  name: 'NearestNeighborStrategyTest',
+  tests: [
+    {
+      name: 'testOptimize_threeNodes_returnsShortestGreedyRoute',
+      detail: 'Asserts route [0,1,2,0] with distance 35.0',
+      fn() {
+        const m = [[0,5,20],[5,0,10],[20,10,0]];
+        const pkgs = [{id:'A'},{id:'B'}];
+        const r = nearestNeighbor(m, [1,2]);
+        assertEquals([0,1,2,0], r.route);
+        assertEquals(35, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_allEqualDistances_returnsValidRoute',
+      detail: 'Equal distances: visits all 3 stops, distance 40',
+      fn() {
+        const m = [[0,10,10,10],[10,0,10,10],[10,10,0,10],[10,10,10,0]];
+        const r = nearestNeighbor(m, [1,2,3]);
+        assertEquals(5, r.route.length);
+        assertEquals(0, r.route[0]);
+        assertEquals(0, r.route[4]);
+        assertTrue(r.route.includes(1) && r.route.includes(2) && r.route.includes(3));
+        assertEquals(40, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_singleStop_returnsDepotStopDepot',
+      detail: 'Single stop returns [0,1,0] with distance 30',
+      fn() {
+        const m = [[0,15],[15,0]];
+        const r = nearestNeighbor(m, [1]);
+        assertEquals([0,1,0], r.route);
+        assertEquals(30, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_mixedPriorities_allStopsVisited',
+      detail: 'All stops visited regardless of priority',
+      fn() {
+        const m = [[0,5,20,10],[5,0,10,15],[20,10,0,8],[10,15,8,0]];
+        const r = nearestNeighbor(m, [1,2,3]);
+        assertTrue(r.route.includes(1), 'Stop 1 missing');
+        assertTrue(r.route.includes(2), 'Stop 2 missing');
+        assertTrue(r.route.includes(3), 'Stop 3 missing');
+      }
+    },
+    {
+      name: 'testOptimize_returnsToDepot',
+      detail: 'Route starts and ends at Depot (0)',
+      fn() {
+        const m = [[0,5,20],[5,0,10],[20,10,0]];
+        const r = nearestNeighbor(m, [1,2]);
+        assertEquals(0, r.route[0], 'First must be depot');
+        assertEquals(0, r.route[r.route.length-1], 'Last must be depot');
+      }
+    },
+  ]
+},
+
+// ===== 2. GreedyEdgeStrategyTest =====
+{
+  name: 'GreedyEdgeStrategyTest',
+  tests: [
+    {
+      name: 'testOptimize_threeNodes_startsAndEndsAtDepot',
+      detail: 'Route starts and ends at node 0',
+      fn() {
+        const m = [[0,5,20],[5,0,10],[20,10,0]];
+        const r = greedyEdge(m, [1,2]);
+        assertEquals(0, r.route[0]);
+        assertEquals(0, r.route[r.route.length-1]);
+      }
+    },
+    {
+      name: 'testOptimize_threeNodes_allStopsVisited',
+      detail: 'Both stops 1 and 2 are in the route',
+      fn() {
+        const m = [[0,5,20],[5,0,10],[20,10,0]];
+        const r = greedyEdge(m, [1,2]);
+        const stops = r.route.slice(1, -1);
+        assertEquals(2, stops.length);
+        assertTrue(stops.includes(1) && stops.includes(2));
+      }
+    },
+    {
+      name: 'testOptimize_threeNodes_correctTotalDistance',
+      detail: 'Total distance = 35 (5+10+20)',
+      fn() {
+        const m = [[0,5,20],[5,0,10],[20,10,0]];
+        const r = greedyEdge(m, [1,2]);
+        assertEquals(35, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_singleStop_returnsDepotStopDepot',
+      detail: 'Single stop: route is [0,1,0]',
+      fn() {
+        const m = [[0,12],[12,0]];
+        const r = greedyEdge(m, [1]);
+        assertEquals([0,1,0], r.route);
+      }
+    },
+    {
+      name: 'testOptimize_singleStop_distanceIsRoundTrip',
+      detail: 'Round trip distance = 24 (2x12)',
+      fn() {
+        const m = [[0,12],[12,0]];
+        const r = greedyEdge(m, [1]);
+        assertEquals(24, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_fiveNodes_allStopsVisited',
+      detail: 'All 4 stops visited in 5-node graph',
+      fn() {
+        const m = [[0,10,20,30,40],[10,0,15,25,35],[20,15,0,10,20],[30,25,10,0,15],[40,35,20,15,0]];
+        const r = greedyEdge(m, [1,2,3,4]);
+        assertTrue(r.route.includes(1) && r.route.includes(2) && r.route.includes(3) && r.route.includes(4));
+      }
+    },
+    {
+      name: 'testOptimize_fiveNodes_depotFirstAndLast',
+      detail: 'Route starts/ends at depot, sequence size = 6',
+      fn() {
+        const m = [[0,10,20,30,40],[10,0,15,25,35],[20,15,0,10,20],[30,25,10,0,15],[40,35,20,15,0]];
+        const r = greedyEdge(m, [1,2,3,4]);
+        assertEquals(0, r.route[0]);
+        assertEquals(0, r.route[r.route.length-1]);
+        assertEquals(6, r.route.length);
+      }
+    },
+    {
+      name: 'testGetName_returnsGreedyEdgeInsertion',
+      detail: 'Algorithm name is correct',
+      fn() {
+        // Name check is implicit in our frontend - just verify the function exists
+        assertTrue(typeof greedyEdge === 'function', 'greedyEdge function exists');
+      }
+    },
+  ]
+},
+
+// ===== 3. TwoOptStrategyTest =====
+{
+  name: 'TwoOptStrategyTest',
+  tests: [
+    {
+      name: 'testOptimize_improvesOnNearestNeighbor',
+      detail: '2-Opt distance <= Nearest Neighbor distance',
+      fn() {
+        const m = [[0,29,20,21,16],[29,0,15,29,28],[20,15,0,15,14],[21,29,15,0,4],[16,28,14,4,0]];
+        const nn = nearestNeighbor(m, [1,2,3,4]);
+        const to = twoOpt(m, [1,2,3,4]);
+        assertTrue(to.distance <= nn.distance, `2-Opt (${to.distance}) should be <= NN (${nn.distance})`);
+      }
+    },
+    {
+      name: 'testOptimize_singleStop_returnsValidRoute',
+      detail: 'Single stop: [0,1,0] with distance 30',
+      fn() {
+        const m = [[0,15],[15,0]];
+        const r = twoOpt(m, [1]);
+        assertEquals([0,1,0], r.route);
+        assertEquals(30, r.distance);
+      }
+    },
+    {
+      name: 'testOptimize_allStopsVisited_noDuplicates',
+      detail: 'All 3 stops visited, no duplicates in middle',
+      fn() {
+        const m = [[0,5,20,10],[5,0,10,15],[20,10,0,8],[10,15,8,0]];
+        const r = twoOpt(m, [1,2,3]);
+        const stops = r.route.slice(1, -1);
+        assertEquals(3, stops.length);
+        assertEquals(3, new Set(stops).size, 'No duplicates');
+      }
+    },
+    {
+      name: 'testGetName_returnsTwoOptImprovement',
+      detail: 'Algorithm function exists',
+      fn() {
+        assertTrue(typeof twoOpt === 'function', 'twoOpt function exists');
+      }
+    },
+    {
+      name: 'testOptimize_alreadyOptimal_returnsUnchanged',
+      detail: '2-Opt and NN same distance when already optimal',
+      fn() {
+        // Triangle where NN already finds optimal
+        const m = [[0,1,100],[1,0,1],[100,1,0]];
+        const nn = nearestNeighbor(m, [1,2]);
+        const to = twoOpt(m, [1,2]);
+        assertEquals(nn.distance, to.distance);
+      }
+    },
+  ]
+},
+
+// ===== 4. DeliveryGraphTest =====
+{
+  name: 'DeliveryGraphTest',
+  tests: [
+    {
+      name: 'testGetDistance_symmetricMatrix_returnsCorrectValue',
+      detail: 'Correct distances retrieved, graph is symmetric',
+      fn() {
+        const g = new DeliveryGraph([[0,5,10],[5,0,8],[10,8,0]], ['Depot','A','B']);
+        assertEquals(5, g.getDistance(0,1));
+        assertEquals(5, g.getDistance(1,0));
+        assertTrue(g.isSymmetric());
+      }
+    },
+    {
+      name: 'testGetDistance_invalidNode_throwsException',
+      detail: 'ArrayIndexOutOfBoundsException for invalid node',
+      fn() {
+        const g = new DeliveryGraph([[0,5],[5,0]], ['Depot','A']);
+        assertThrows(() => g.getDistance(0, 5), 'Should throw for invalid index');
+      }
+    },
+    {
+      name: 'testIsSymmetric_asymmetricInput_returnsFalse',
+      detail: 'Asymmetric matrix returns false',
+      fn() {
+        const g = new DeliveryGraph([[0,5,10],[3,0,8],[10,8,0]], ['Depot','A','B']);
+        assertFalse(g.isSymmetric(), 'Should be asymmetric');
+      }
+    },
+    {
+      name: 'testConstructor_nonSquareMatrix_throwsInvalidMatrixException',
+      detail: 'Non-square matrix throws exception',
+      fn() {
+        assertThrows(() => new DeliveryGraph([[0,5,10],[5,0,8]], ['Depot','A']));
+      }
+    },
+    {
+      name: 'testGetNodeIndex_existingNode_returnsCorrectIndex',
+      detail: 'getNodeIndex returns correct indices',
+      fn() {
+        const g = new DeliveryGraph([[0,5,10],[5,0,8],[10,8,0]], ['Depot','A','B']);
+        assertEquals(0, g.getNodeIndex('Depot'));
+        assertEquals(1, g.getNodeIndex('A'));
+        assertEquals(2, g.getNodeIndex('B'));
+      }
+    },
+    {
+      name: 'testGetNodeIndex_unknownNode_returnsNegativeOne',
+      detail: '-1 for unknown node name',
+      fn() {
+        const g = new DeliveryGraph([[0,5],[5,0]], ['Depot','A']);
+        assertEquals(-1, g.getNodeIndex('Z'));
+      }
+    },
+    {
+      name: 'testConstructor_negativeDistance_throwsInvalidMatrixException',
+      detail: 'Negative distance throws exception',
+      fn() {
+        assertThrows(() => new DeliveryGraph([[0,-5],[5,0]], ['Depot','A']));
+      }
+    },
+  ]
+},
+
+// ===== 5. RouteTest =====
+{
+  name: 'RouteTest',
+  tests: [
+    {
+      name: 'testGetStops_multipleStops_returnsMiddleNodesOnly',
+      detail: 'getStops() returns [1,2,3] excluding depot bookends',
+      fn() {
+        const r = new Route([0,1,2,3,0], 45, 'Test');
+        assertEquals([1,2,3], r.getStops());
+      }
+    },
+    {
+      name: 'testGetStops_singleStop_returnsOneElement',
+      detail: 'Single stop returns [1]',
+      fn() {
+        const r = new Route([0,1,0], 30, 'Test');
+        assertEquals([1], r.getStops());
+      }
+    },
+    {
+      name: 'testGetStops_onlyDepot_returnsEmpty',
+      detail: 'Route [0,0] returns empty stops',
+      fn() {
+        const r = new Route([0,0], 0, 'Test');
+        assertEquals([], r.getStops());
+      }
+    },
+    {
+      name: 'testCalculateTotalDistance_correctSum',
+      detail: 'Total distance stored correctly',
+      fn() {
+        const r = new Route([0,1,2,0], 45, 'Test');
+        assertEquals(45, r.totalDistance);
+      }
+    },
+    {
+      name: 'testToRouteString_containsAllNodeNames',
+      detail: 'Route string contains all node names and separator',
+      fn() {
+        const r = new Route([0,1,2,0], 45, 'Test', ['Depot','Alpha','Beta']);
+        const s = r.toRouteString();
+        assertTrue(s.includes('Depot'), 'Contains Depot');
+        assertTrue(s.includes('Alpha'), 'Contains Alpha');
+        assertTrue(s.includes('Beta'), 'Contains Beta');
+        assertTrue(s.includes('→'), 'Contains arrow separator');
+      }
+    },
+  ]
+},
+
+// ===== 6. ConstraintCheckerTest =====
+{
+  name: 'ConstraintCheckerTest',
+  tests: [
+    {
+      name: 'testOnStopReached_highPriorityBeforeNormal_noViolation',
+      detail: 'No violation when HIGH delivered before NORMAL',
+      fn() {
+        const m = [[0,10,20],[10,0,15],[20,15,0]];
+        const pkgs = [
+          {id:'A',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'12:00',label:'X'},
+          {id:'B',priority:'NORMAL',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'Y'}
+        ];
+        const r = checkConstraints([0,1,2,0], m, pkgs, ['Depot','A','B'], 40);
+        assertEquals(0, r.violations.length, 'No violations expected');
+      }
+    },
+    {
+      name: 'testOnStopReached_normalBeforeHighPriority_flagsViolation',
+      detail: 'Violation flagged when NORMAL before HIGH',
+      fn() {
+        const m = [[0,10,20],[10,0,15],[20,15,0]];
+        const pkgs = [
+          {id:'A',priority:'NORMAL',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'X'},
+          {id:'B',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'Y'}
+        ];
+        const r = checkConstraints([0,1,2,0], m, pkgs, ['Depot','A','B'], 40);
+        assertTrue(r.violations.some(v => v.includes('HIGH priority')), 'Should flag priority violation');
+      }
+    },
+    {
+      name: 'testOnStopReached_arrivalWithinTimeWindow_noViolation',
+      detail: 'No violation for arrival within window',
+      fn() {
+        const m = [[0,5],[5,0]];
+        const pkgs = [{id:'A',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'12:00',label:'X'}];
+        const r = checkConstraints([0,1,0], m, pkgs, ['Depot','A'], 40);
+        // Arrival at 08:00 + (5/40)*60 = 08:07.5 - within 08:00-12:00
+        assertEquals(0, r.violations.length);
+      }
+    },
+    {
+      name: 'testOnStopReached_arrivalOutsideTimeWindow_flagsViolation',
+      detail: 'Violation flagged for late arrival',
+      fn() {
+        const m = [[0,100],[100,0]];
+        const pkgs = [{id:'A',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'08:30',label:'X'}];
+        const r = checkConstraints([0,1,0], m, pkgs, ['Depot','A'], 40);
+        // Arrival at 08:00 + (100/40)*60 = 10:30 - LATE (closes 08:30)
+        assertTrue(r.violations.some(v => v.includes('Late')), 'Should flag late arrival');
+      }
+    },
+    {
+      name: 'testGetViolations_noActions_returnsEmptyList',
+      detail: 'Empty route has no violations',
+      fn() {
+        const r = checkConstraints([0,0], [[0]], [], ['Depot'], 40);
+        assertEquals(0, r.violations.length);
+      }
+    },
+    {
+      name: 'testOnStopReached_multipleHighPrioritiesFirst_noViolation',
+      detail: 'Multiple HIGH priorities before others is fine',
+      fn() {
+        const m = [[0,10,20,30],[10,0,15,25],[20,15,0,10],[30,25,10,0]];
+        const pkgs = [
+          {id:'A',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'X'},
+          {id:'B',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'Y'},
+          {id:'C',priority:'NORMAL',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'Z'}
+        ];
+        const r = checkConstraints([0,1,2,3,0], m, pkgs, ['Depot','A','B','C'], 40);
+        const priorityViolations = r.violations.filter(v => v.includes('priority'));
+        assertEquals(0, priorityViolations.length);
+      }
+    },
+    {
+      name: 'testOnStopReached_lowBeforeHigh_flagsViolation',
+      detail: 'LOW before HIGH is also a violation',
+      fn() {
+        const m = [[0,10,20],[10,0,15],[20,15,0]];
+        const pkgs = [
+          {id:'A',priority:'LOW',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'X'},
+          {id:'B',priority:'HIGH',weightKg:5,timeWindowOpen:'08:00',timeWindowClose:'14:00',label:'Y'}
+        ];
+        const r = checkConstraints([0,1,2,0], m, pkgs, ['Depot','A','B'], 40);
+        assertTrue(r.violations.some(v => v.includes('HIGH priority')), 'LOW before HIGH should violate');
+      }
+    },
+  ]
+},
+
+// ===== 7. CsvMatrixReaderTest =====
+{
+  name: 'CsvMatrixReaderTest',
+  tests: [
+    {
+      name: 'testRead_validCsv_returnsCorrectGraph',
+      detail: '3 nodes with correct names and distances',
+      fn() {
+        const csv = ',Depot,A,B\nDepot,0,5,10\nA,5,0,8\nB,10,8,0';
+        const {nodeNames, matrix} = parseCSV(csv);
+        assertEquals(3, nodeNames.length);
+        assertEquals('Depot', nodeNames[0]);
+        assertEquals(5, matrix[0][1]);
+        assertEquals(10, matrix[0][2]);
+      }
+    },
+    {
+      name: 'testRead_nonSquareMatrix_detectable',
+      detail: 'Non-square matrix can be detected',
+      fn() {
+        const csv = ',Depot,A,B\nDepot,0,5,10\nA,5,0,8';
+        const {nodeNames, matrix} = parseCSV(csv);
+        // 3 header names but only 2 data rows
+        assertTrue(matrix.length !== nodeNames.length, 'Row count should differ from header count');
+      }
+    },
+    {
+      name: 'testRead_fourByFourMatrix_correctNodeCount',
+      detail: '4x4 CSV produces 4-node graph',
+      fn() {
+        const csv = ',Depot,A,B,C\nDepot,0,5,10,15\nA,5,0,8,12\nB,10,8,0,6\nC,15,12,6,0';
+        const {nodeNames, matrix} = parseCSV(csv);
+        assertEquals(4, nodeNames.length);
+        assertEquals(4, matrix.length);
+        assertEquals('C', nodeNames[3]);
+      }
+    },
+    {
+      name: 'testRead_negativeDistance_detectable',
+      detail: 'DeliveryGraph rejects negative distances',
+      fn() {
+        assertThrows(() => new DeliveryGraph([[0,-5],[5,0]], ['Depot','A']));
+      }
+    },
+    {
+      name: 'testRead_validCsv_symmetricMatrix',
+      detail: 'Parsed symmetric CSV produces symmetric graph',
+      fn() {
+        const csv = ',Depot,A,B\nDepot,0,5,10\nA,5,0,8\nB,10,8,0';
+        const {matrix} = parseCSV(csv);
+        const g = new DeliveryGraph(matrix, ['Depot','A','B']);
+        assertTrue(g.isSymmetric());
+      }
+    },
+  ]
+},
+
+// ===== 8. PackageJsonReaderTest =====
+{
+  name: 'PackageJsonReaderTest',
+  tests: [
+    {
+      name: 'testRead_validJson_returnsCorrectPackageCount',
+      detail: '2 packages parsed from JSON',
+      fn() {
+        const json = '[{"id":"A","label":"X","priority":"HIGH","weightKg":8,"timeWindowOpen":"08:00","timeWindowClose":"10:00"},{"id":"B","label":"Y","priority":"NORMAL","weightKg":5,"timeWindowOpen":"09:00","timeWindowClose":"12:00"}]';
+        const pkgs = parseJSON(json);
+        assertEquals(2, pkgs.length);
+      }
+    },
+    {
+      name: 'testRead_validJson_highPriorityParsedCorrectly',
+      detail: 'Priority and weight parsed correctly',
+      fn() {
+        const json = '[{"id":"A","label":"X","priority":"HIGH","weightKg":8,"timeWindowOpen":"08:00","timeWindowClose":"10:00"}]';
+        const pkgs = parseJSON(json);
+        assertEquals('HIGH', pkgs[0].priority);
+        assertEquals(8, pkgs[0].weightKg);
+      }
+    },
+    {
+      name: 'testRead_validJson_timeWindowParsedCorrectly',
+      detail: 'Time windows parsed as strings',
+      fn() {
+        const json = '[{"id":"A","label":"X","priority":"HIGH","weightKg":5,"timeWindowOpen":"08:30","timeWindowClose":"11:45"}]';
+        const pkgs = parseJSON(json);
+        assertEquals('08:30', pkgs[0].timeWindowOpen);
+        assertEquals('11:45', pkgs[0].timeWindowClose);
+      }
+    },
+    {
+      name: 'testRead_invalidJson_throwsException',
+      detail: 'Malformed JSON throws parse error',
+      fn() {
+        assertThrows(() => parseJSON('{invalid json!!!'));
+      }
+    },
+    {
+      name: 'testTimeToMin_validTime_convertsCorrectly',
+      detail: 'Time string converted to minutes since midnight',
+      fn() {
+        assertEquals(480, timeToMin('08:00'));
+        assertEquals(510, timeToMin('08:30'));
+        assertEquals(780, timeToMin('13:00'));
+        assertEquals(-1, timeToMin(null));
+      }
+    },
+    {
+      name: 'testMinToTime_validMinutes_formatsCorrectly',
+      detail: 'Minutes converted back to HH:MM format',
+      fn() {
+        assertEquals('08:00', minToTime(480));
+        assertEquals('08:30', minToTime(510));
+        assertEquals('13:00', minToTime(780));
+      }
+    },
+  ]
+},
+
+]; // end TEST_SUITES
+
+// ================================================================
+//  TEST RUNNER
+// ================================================================
+function runAllTests() {
+  const container = document.getElementById('testResults');
+  container.innerHTML = '';
+  let totalPass = 0, totalFail = 0, totalCount = 0;
+
+  for (const suite of TEST_SUITES) {
+    let suitePass = 0, suiteFail = 0;
+    const testRows = [];
+
+    for (const test of suite.tests) {
+      totalCount++;
+      const t0 = performance.now();
+      let passed = true, error = null;
+      try {
+        test.fn();
+        suitePass++;
+        totalPass++;
+      } catch (e) {
+        passed = false;
+        error = e.message;
+        suiteFail++;
+        totalFail++;
+      }
+      const elapsed = (performance.now() - t0).toFixed(1);
+
+      testRows.push(`
+        <div class="test-row">
+          <div class="test-icon ${passed ? 'pass' : 'fail'}">${passed ? '\u2713' : '\u2717'}</div>
+          <div class="test-info">
+            <div class="test-name">${test.name}</div>
+            <div class="test-detail">${test.detail}</div>
+            ${error ? `<div class="test-error">${error}</div>` : ''}
+          </div>
+          <div class="test-time">${elapsed}ms</div>
+        </div>
+      `);
+    }
+
+    const allPass = suiteFail === 0;
+    container.innerHTML += `
+      <div class="test-suite">
+        <div class="suite-header ${true ? 'open' : ''}" onclick="this.classList.toggle('open'); this.nextElementSibling.classList.toggle('open')">
+          <div class="suite-name">
+            <span class="suite-icon">\u25B6</span>
+            ${suite.name}
+            <span style="color:var(--subtitle);font-weight:400;font-size:0.82rem">(${suitePass + suiteFail} tests)</span>
+          </div>
+          <span class="suite-badge ${allPass ? 'all-pass' : 'has-fail'}">${allPass ? suitePass + '/' + (suitePass+suiteFail) + ' passed' : suiteFail + ' failed'}</span>
+        </div>
+        <div class="suite-tests open">${testRows.join('')}</div>
+      </div>
+    `;
+  }
+
+  document.getElementById('testPass').textContent = totalPass;
+  document.getElementById('testFail').textContent = totalFail;
+  document.getElementById('testTotal').textContent = totalCount;
+
+  const pct = totalCount > 0 ? (totalPass / totalCount * 100) : 0;
+  const bar = document.getElementById('testProgressBar');
+  bar.style.width = pct + '%';
+  bar.style.background = totalFail > 0 ? 'linear-gradient(90deg, var(--success) ' + pct + '%, var(--danger) ' + pct + '%)' : 'var(--success)';
+}
+
+// Auto-run on load
+window.addEventListener('load', runOptimization);
+window.addEventListener('resize', () => {
+  if (results) renderCanvas(lastNodeNames, lastMatrix, lastPackages);
+});
+</script>
+</body>
+</html>

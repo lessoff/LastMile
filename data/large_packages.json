@@ -1,0 +1,11 @@
+[
+  {"id":"A","label":"HK International Airport","priority":"HIGH","weightKg":12,"timeWindowOpen":"08:00","timeWindowClose":"09:30"},
+  {"id":"B","label":"Tsim Sha Tsui Ferry Pier","priority":"NORMAL","weightKg":8,"timeWindowOpen":"09:00","timeWindowClose":"13:00"},
+  {"id":"C","label":"Central Post Office","priority":"HIGH","weightKg":5,"timeWindowOpen":"08:00","timeWindowClose":"10:00"},
+  {"id":"D","label":"Mong Kok Station","priority":"LOW","weightKg":15,"timeWindowOpen":"10:00","timeWindowClose":"16:00"},
+  {"id":"E","label":"Wan Chai Convention Ctr","priority":"NORMAL","weightKg":10,"timeWindowOpen":"09:00","timeWindowClose":"14:00"},
+  {"id":"F","label":"Tuen Mun Hospital","priority":"HIGH","weightKg":6,"timeWindowOpen":"08:00","timeWindowClose":"11:00"},
+  {"id":"G","label":"Sha Tin New Town Plaza","priority":"LOW","weightKg":20,"timeWindowOpen":"11:00","timeWindowClose":"17:00"},
+  {"id":"H","label":"Causeway Bay Times Sq","priority":"NORMAL","weightKg":9,"timeWindowOpen":"09:30","timeWindowClose":"15:00"},
+  {"id":"I","label":"Sai Kung Waterfront","priority":"LOW","weightKg":7,"timeWindowOpen":"12:00","timeWindowClose":"18:00"}
+]
